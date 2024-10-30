@@ -45,6 +45,18 @@ async function updateUser(id, { first_name, last_name }) {
   return result.rows[0];
 }
 
+// Update User
+async function updateUserBalance(id, balance) {
+  const query = `
+        UPDATE users
+        SET balance = $1
+        WHERE id = $2 RETURNING *
+    `;
+  const values = [balance, id];
+  const result = await pool.query(query, values);
+  return result.rows[0];
+}
+
 // Update profile image
 async function updateProfileImage(id, profile_image) {
   const query = `
@@ -71,4 +83,5 @@ module.exports = {
   getUsers,
   getUserByEmail,
   updateProfileImage,
+  updateUserBalance,
 };

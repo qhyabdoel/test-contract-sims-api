@@ -1,6 +1,10 @@
 const userModel = require("../models/userModel");
+const transactionModel = require("../models/transactionModel");
+
 const { validationResult } = require("express-validator");
 const { upload } = require("../config/s3");
+
+const { v4: uuidv4 } = require("uuid");
 
 // Create a new user
 async function createUser(req, res) {
@@ -15,7 +19,6 @@ async function createUser(req, res) {
     if (req.body.email) {
       const existUser = await userModel.getUserByEmail(req.body.email);
       if (existUser) {
-        console.log({ existUser });
         return res.status(400).json({ message: "Email sudah terdaftar." });
       }
     }
@@ -77,6 +80,24 @@ async function getUserProfile(req, res) {
   }
 }
 
+// Get login user profile
+async function getUserBalance(req, res) {
+  try {
+    const user = await userModel.getUserByEmail(req.user.email);
+    if (!user) return res.status(404).json({ message: "User tidak ada" });
+    res.json({
+      status: 0,
+      message: "Get balance berhasil",
+      data: {
+        balance: user.balance,
+      },
+    });
+  } catch (error) {
+    console.log({ error });
+    res.status(500).json({ error: "Error getting user" });
+  }
+}
+
 // Update profile image
 async function updateProfileImage(req, res) {
   upload.single("file")(req, res, (err) => {
@@ -114,14 +135,52 @@ async function updateProfileImage(req, res) {
   });
 }
 
+// Topup / update balance
+async function topup(req, res) {
+  try {
+    // Validate requset
+    const errors = validationResult(req);
+    if (!errors.isEmpty())
+      return res.status(400).json({ errors: errors.array() });
+
+    const findUser = await userModel.getUserByEmail(req.user.email);
+    const userBalance = findUser.balance;
+    const topupAmount = req.body.top_up_amount;
+    let totalBalance = userBalance + Number(topupAmount);
+
+    const updateUser = await userModel.updateUserBalance(
+      req.user.id,
+      totalBalance
+    );
+
+    // create transaction history after update balance
+    const invoice_number = uuidv4();
+    await transactionModel.createTransactionHistory(
+      invoice_number,
+      "TOPUP",
+      "Top Up balance",
+      topupAmount
+    );
+
+    res.json({
+      status: 0,
+      message: "Top up balance berhasil",
+      data: { balance: updateUser.balance },
+    });
+  } catch (error) {
+    console.log({ error });
+    res.status(500).json({ error: "Error updating user" });
+  }
+}
+
 // Update a user by ID
 async function updateUser(req, res) {
   try {
-    const updatedUser = await userModel.updateUser(req.params.id, req.body);
-    if (!updatedUser) {
+    const user = await userModel.updateUser(req.user.id, req.body);
+    if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
-    res.json(updatedUser);
+    res.json({ status: 0, message: "Update profile berhasil", data: user });
   } catch (error) {
     res.status(500).json({ error: "Error updating user" });
   }
@@ -145,4 +204,6 @@ module.exports = {
   getUserById,
   getUsers,
   getUserProfile,
+  getUserBalance,
+  topup,
 };

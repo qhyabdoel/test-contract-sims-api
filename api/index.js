@@ -8,6 +8,7 @@ const bodyParser = require("body-parser");
 const indexRouter = require("./routes/index");
 const usersRouter = require("./routes/users");
 const profileRouter = require("./routes/profiles");
+const transactionRouter = require("./routes/transaction");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -20,6 +21,7 @@ app.use(bodyParser.json());
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
 app.use("/profile", profileRouter);
+app.use("/transaction", transactionRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

@@ -12,8 +12,6 @@ const s3Client = new S3Client({
   },
 });
 
-// console.log("process.env", process.env);
-
 // Set up multer storage for S3
 const upload = multer({
   storage: multerS3({

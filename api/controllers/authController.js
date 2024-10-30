@@ -13,15 +13,13 @@ async function login(req, res) {
 
   // Find user by email
   const user = await userModel.getUserByEmail(email);
-  console.log({ user });
+
   if (!user)
     return res.status(401).json({ message: "Username atau password salah" });
 
   // Compare passwords
-  if (password !== user.password) {
-    console.log({ password });
+  if (password !== user.password)
     return res.status(401).json({ message: "Username atau password salah" });
-  }
 
   // Generate token
   const token = generateToken(user);
