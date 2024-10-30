@@ -1,18 +1,29 @@
 require("dotenv").config();
+
 const createError = require("http-errors");
 const express = require("express");
 const logger = require("morgan");
+const bodyParser = require("body-parser");
 
 const indexRouter = require("./routes/index");
 const usersRouter = require("./routes/users");
+const profileRouter = require("./routes/profiles");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+const swaggerUi = require("swagger-ui-express");
+const swaggerSpec = require("./config/swagger");
+
 app.use(logger("dev"));
+
+// parse request body
+app.use(bodyParser.json());
 
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
+app.use("/profile", profileRouter);
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec)); // Swagger UI route
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
@@ -27,7 +38,7 @@ app.use(function (err, req, res, next) {
 
   // render the error page
   res.status(err.status || 500);
-  res.render("error");
+  res.json({ error: err });
 });
 
 app.listen(PORT, () => {
