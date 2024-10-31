@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 
-const SECRET_KEY = "Kikiscret1"; // Change this to a strong secret key
+const SECRET_KEY = process.env.JWT_SECRET; // Change this to a strong secret key
 
 // Function to generate a token
 const generateToken = (user) => {

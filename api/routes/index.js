@@ -15,16 +15,23 @@ const {
   topupValidationRules,
 } = require("../middlewares/validations");
 
+const docpage = `
+  <div style="padding:16px;">
+    <p>You can see the documention of API here:</p>
+    <p>
+      <a target="_blank" href="https://documenter.getpostman.com/view/1181506/2sAY4vgi53">https://documenter.getpostman.com/view/1181506/2sAY4vgi53</a>
+    </p>
+  </div>
+`;
+
 /* GET home page. */
 router.get("/", function (req, res, next) {
-  res.send(`
-    <div style="padding:16px;">
-      <p>You can see the documention of API here:</p>
-      <p>
-        <a href="test">Api Doc</a>
-      </p>
-    </div>
-  `);
+  res.send(docpage);
+});
+
+/* api documentation */
+router.get("/api-docs", function (req, res, next) {
+  res.send(docpage);
 });
 
 /* user registration route */
