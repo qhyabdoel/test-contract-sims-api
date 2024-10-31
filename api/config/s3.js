@@ -12,6 +12,15 @@ const s3Client = new S3Client({
   },
 });
 
+// Define a file filter to only allow PNG and JPEG files
+const fileFilter = (req, file, cb) => {
+  if (file.mimetype === "image/png" || file.mimetype === "image/jpeg") {
+    cb(null, true); // Accept file
+  } else {
+    cb(new Error("Only PNG and JPEG files are allowed"), false); // Reject file
+  }
+};
+
 // Set up multer storage for S3
 const upload = multer({
   storage: multerS3({
@@ -22,6 +31,7 @@ const upload = multer({
       cb(null, `profile_images/${Date.now().toString()}_${file.originalname}`); // Use timestamp to avoid name conflicts
     },
   }),
+  fileFilter: fileFilter, // Apply file filter here
 });
 
 module.exports = { s3Client, upload };
